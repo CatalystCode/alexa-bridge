@@ -15,6 +15,8 @@ var botId = config.get('botId');
 
 function sendReply(replyToId) {
 
+  // Send our reply to Alexa
+
   var res_next = responses[replyToId];
   var res = res_next[0]; 
   var next = res_next[1];
@@ -26,6 +28,10 @@ function sendReply(replyToId) {
 }
 
 function botSays(activity) {
+
+  // This is where messages from the Bot come in.
+  // They could be in response to system messages, unprompted
+  // or replies to our own messages
 
   // We see all messages to the conversation forcing us to screen
   // the client originated ones and only complete only the bot's 
@@ -41,13 +47,18 @@ function botSays(activity) {
           "text": activity.text
         }
       }
-    };
+    }
 
     if (activity.replyToId in responses) {
+      // We've already seen the reply to our initial send
+      // so we can send straight away
       responses[activity.replyToId].push(reply);
       sendReply(activity.replyToId);
     }
     else {
+      // We haven't seen the reply to our initial send yet so we
+      // don't know to which response object we need to send this 
+      // reply, store until we do
       responses[activity.replyToId] = [reply];
     }
   }
@@ -58,13 +69,11 @@ function alexaSays(req, res, bot, next) {
   // Alexa is calling us with the utterance
 
   var userId = req.body.session.user.userId;
-  var requestId = req.body.request.requestId;
   var utterance = req.body.request.intent.slots.phrase.value;
 
   // Bot SDK seems to have some hidden rules regarding valid userId
   // so doing this works around those (else we get 400's)
   userId = crypto.createHmac('md5', userId).digest('hex');
-  requestId = userId + crypto.createHmac('md5', requestId).digest('hex');
 
   var activity = {
     type : "message",
@@ -74,18 +83,25 @@ function alexaSays(req, res, bot, next) {
     timestamp : (new Date()).toISOString()
   };
 
-  //responses[id] = [ res, next ];
-
   // Forward the activity to our Bot
   bot.postActivity(activity)
   .subscribe(id => {
     if (id != 'retry') {
+      
+      // id is the replyToId for the message, we're going to
+      // use this match up replies (what the bot says to us) to
+      // repsonse objects (the http transport back to Alexa)
+
       if (id in responses) {
+        // We've already had the reply from the Bot, send
+        // straight away
         responses[id].unshift(next);
         responses[id].unshift(res);
         sendReply(id);
       }
       else {
+        // Bot hasn't replied yet, store the response objects until
+        // it has
         responses[id] = [res, next];
       }
     }
