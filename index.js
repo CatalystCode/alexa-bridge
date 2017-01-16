@@ -11,49 +11,87 @@ global.XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 var config = nconf.argv().env().file({ file: 'localConfig.json' });
 
 var responses = {};
+var botId = config.get('botId');
 
-function botSays(activity) {
-  console.log(activity);
+function sendReply(replyToId) {
 
-  var reply = { 
-    "version": "1.0",
-    "response": {
-      "outputSpeech": {
-        "type": "PlainText",
-        "text": "Nonsense.",
-      }
-    }
-  };
+  var res_next = responses[replyToId];
+  var res = res_next[0]; 
+  var next = res_next[1];
+  var reply = res_next[2];
+  delete responses[replyToId];
 
-  var res_next = responses[activity.from.id];
-  var res = res_next[0]; var next = res_next[1];
   res.send(reply);
   next();
 }
 
-function alexaSays(req, res, bot, next) {
+function botSays(activity) {
 
-    var userId = req.body.session.user.userId;
-    var utterance = req.body.request.intent.slots.phrase.value;
+  // We see all messages to the conversation forcing us to screen
+  // the client originated ones and only complete only the bot's 
+  // replies to previous requests
+  
+  if (activity.from.id == botId && activity.replyToId) {
 
-    userId = crypto.createHmac('sha256', userId).digest('hex');
-
-    var activity = {
-      type : "message",
-      text : utterance,
-      from : { id : userId },
-      locale : "en-US",
-      timestamp : (new Date()).toISOString()
+    var reply = { 
+      "version": "1.0",
+      "response": {
+        "outputSpeech": {
+          "type": "PlainText",
+          "text": activity.text
+        }
+      }
     };
 
-    responses[userId] = [ res, next ];
-    bot.postActivity(activity)
-    .subscribe(id => {
-    }, error => {
-      console.warn("failed to send postBack", error);
-    });
+    if (activity.replyToId in responses) {
+      responses[activity.replyToId].push(reply);
+      sendReply(activity.replyToId);
+    }
+    else {
+      responses[activity.replyToId] = [reply];
+    }
+  }
+}
 
-    //next();
+function alexaSays(req, res, bot, next) {
+  
+  // Alexa is calling us with the utterance
+
+  var userId = req.body.session.user.userId;
+  var requestId = req.body.request.requestId;
+  var utterance = req.body.request.intent.slots.phrase.value;
+
+  // Bot SDK seems to have some hidden rules regarding valid userId
+  // so doing this works around those (else we get 400's)
+  userId = crypto.createHmac('md5', userId).digest('hex');
+  requestId = userId + crypto.createHmac('md5', requestId).digest('hex');
+
+  var activity = {
+    type : "message",
+    text : utterance,
+    from : { id : userId },
+    locale : "en-US",
+    timestamp : (new Date()).toISOString()
+  };
+
+  //responses[id] = [ res, next ];
+
+  // Forward the activity to our Bot
+  bot.postActivity(activity)
+  .subscribe(id => {
+    if (id != 'retry') {
+      if (id in responses) {
+        responses[id].unshift(next);
+        responses[id].unshift(res);
+        sendReply(id);
+      }
+      else {
+        responses[id] = [res, next];
+      }
+    }
+  }, error => {
+    console.warn("failed to send postBack", error);
+  });
 }
 
 function startBridge() {
