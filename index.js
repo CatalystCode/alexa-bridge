@@ -64,9 +64,7 @@ function botSays(activity) {
   }
 }
 
-function alexaSays(req, res, bot, next) {
-  
-  // Alexa is calling us with the utterance
+function alexaIntent(req, res, bot, next) {
 
   var userId = req.body.session.user.userId;
   var utterance = req.body.request.intent.slots.phrase.value;
@@ -108,6 +106,15 @@ function alexaSays(req, res, bot, next) {
   }, error => {
     console.warn("failed to send postBack", error);
   });
+}
+
+function alexaSays(req, res, bot, next) {
+  
+  // Alexa is calling us with the utterance
+
+  if (req.body.request.type == "IntentRequest") {
+    alexaIntent(req, res, bot, next);
+  }
 }
 
 function startBridge() {
