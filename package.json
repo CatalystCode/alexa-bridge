@@ -14,5 +14,9 @@
     "restify": "^4.3.0",
     "rxjs": "^5.0.3",
     "xmlhttprequest": "^1.8.0"
-  }
+  },
+  "files" : [
+    "index.js",
+    "lib"
+  ]
 }
