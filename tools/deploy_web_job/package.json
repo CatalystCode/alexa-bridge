@@ -1,0 +1,16 @@
+{
+  "name": "deploy",
+  "version": "1.0.0",
+  "description": "Deploy a web job to an Azure Web Service site",
+  "main": "run.js",
+  "dependencies": {
+    "archiver": "^1.0.0",
+    "randomstring": "^1.1.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "tobybrad",
+  "license": "ISC"
+}
