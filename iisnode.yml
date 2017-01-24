@@ -1,0 +1,4 @@
+{
+  loggingEnabled: true
+  logDirectory: iisnode
+}
