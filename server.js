@@ -144,6 +144,7 @@ function startBridge() {
   server.use(restify.bodyParser());
   server.post('/messages', (req, res, err) => alexaSays(req, res, connector, err) );
 
+  console.error("Starting...");
   server.listen(process.env.port || process.env.PORT || 8080, function() {
     console.log('%s listening at %s', server.name, server.url);
   });
