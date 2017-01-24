@@ -1,5 +1,6 @@
 "use strict";
 
+var guid = require('guid');
 var nconf = require('nconf');
 var crypto = require('crypto');
 var restify = require('restify');
@@ -10,6 +11,7 @@ global.XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 var config = nconf.argv().env().file({ file: 'localConfig.json' });
 
+var timing = {};
 var responses = {};
 var botId = config.get('botId');
 
@@ -38,6 +40,8 @@ function botSays(activity) {
   // replies to previous requests
   
   if (activity.from.id == botId && activity.replyToId) {
+
+    console.log("Go reply");
 
     var reply = { 
       "version": "1.0",
@@ -73,6 +77,8 @@ function alexaIntent(req, res, bot, next) {
   // so doing this works around those (else we get 400's)
   userId = crypto.createHmac('md5', userId).digest('hex');
 
+  var startTime = new Date();
+
   var activity = {
     type : "message",
     text : utterance,
@@ -85,7 +91,10 @@ function alexaIntent(req, res, bot, next) {
   bot.postActivity(activity)
   .subscribe(id => {
     if (id != 'retry') {
-      
+
+      var endTime = new Date();
+      console.log("Time: " + (endTime - startTime));
+
       // id is the replyToId for the message, we're going to
       // use this match up replies (what the bot says to us) to
       // repsonse objects (the http transport back to Alexa)
@@ -112,9 +121,13 @@ function alexaSays(req, res, bot, next) {
   
   // Alexa is calling us with the utterance
 
-  if (req.body.request.type == "IntentRequest") {
+  if (req.body && req.body.request && req.body.request.type && 
+      req.body.request.type == "IntentRequest") {
     alexaIntent(req, res, bot, next);
   }
+  else {
+    return next(new restify.InvalidArgumentError("Unhandled request type"));
+  } 
 }
 
 function startBridge() {
@@ -131,7 +144,7 @@ function startBridge() {
   server.use(restify.bodyParser());
   server.post('/messages', (req, res, err) => alexaSays(req, res, connector, err) );
 
-  server.listen(8080, function() {
+  server.listen(process.env.port || 8080, function() {
     console.log('%s listening at %s', server.name, server.url);
   });
 }
