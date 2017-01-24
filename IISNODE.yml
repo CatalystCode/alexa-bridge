@@ -1,3 +1,5 @@
 loggingEnabled: true
 logDirectory: iisnode
+logDirectoryName: iisnode
 devErrorsEnabled: true
+flushResponse: true
