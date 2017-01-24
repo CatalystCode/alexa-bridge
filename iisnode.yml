@@ -1,5 +1,3 @@
-{
-  loggingEnabled: true
-  logDirectory: iisnode
-  devErrorsEnabled: true
-}
+loggingEnabled: true
+logDirectory: iisnode
+devErrorsEnabled: true
