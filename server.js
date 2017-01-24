@@ -1,4 +1,4 @@
-"use strict";
+/*"use strict";
 
 var guid = require('guid');
 var nconf = require('nconf');
@@ -157,4 +157,7 @@ function main() {
 
 if (require.main === module) {
   main();
-}
+}*/
+
+console.log("STDOUT");
+console.log("STDERR");
