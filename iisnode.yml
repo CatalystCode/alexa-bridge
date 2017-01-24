@@ -1,4 +1,5 @@
 {
   loggingEnabled: true
   logDirectory: iisnode
+  devErrorsEnabled: true
 }
