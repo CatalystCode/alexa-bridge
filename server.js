@@ -151,6 +151,7 @@ function startBridge() {
 }
 
 function main() {
+  console.error("============= main ==================");
   startBridge();
 }
 
