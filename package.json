@@ -15,7 +15,6 @@
     "xmlhttprequest": "^1.8.0"
   },
   "files": [
-    "server.js",
-    "lib"
+    "server.js"
   ]
 }
