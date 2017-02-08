@@ -1,10 +1,9 @@
 "use strict";
 
-var guid = require('guid');
 var nconf = require('nconf');
 var crypto = require('crypto');
 var restify = require('restify');
-var directLine = require('./lib/directLine.js');
+var directLine = require('botframework-directlinejs');
 
 // Required to make rxjs ajax run browser-less
 global.XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
@@ -35,8 +34,8 @@ function botSays(activity) {
   // They could be in response to system messages, unprompted
   // or replies to our own messages
 
-  // We see all messages to the conversation forcing us to screen
-  // the client originated ones and only complete only the bot's 
+  // We see *all* messages in the conversation, forcing us to screen out
+  // the client-originated ones and forward just the bot's 
   // replies to previous requests
   
   if (activity.from.id == botId && activity.replyToId) {
@@ -131,8 +130,8 @@ function alexaSays(req, res, bot, next) {
 }
 
 function startBridge() {
-
-  var opts = { secret : config.get('directLineSecret') };
+  
+  var opts = { secret : config.get('directLineSecret'), webSocket:false };
   var connector = new directLine.DirectLine(opts);
  
   connector.activity$.subscribe(
@@ -144,7 +143,6 @@ function startBridge() {
   server.use(restify.bodyParser());
   server.post('/messages', (req, res, err) => alexaSays(req, res, connector, err) );
 
-  console.error("Starting...");
   server.listen(process.env.port || process.env.PORT || 8080, function() {
     console.log('%s listening at %s', server.name, server.url);
   });
