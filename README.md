@@ -46,6 +46,7 @@ ngrok http 3979 <- The Bot
 ### Configure Alexa Skill
 
 Take the public ngrok endpoint for the 8080 port and use it to configure an HTTP endpoint for the sklill in the Alexa Skill configuration.
+Use the https protocol and add `/messages`. Final url should look something like this: `https://7dd4dd1f.ngrok.io/messages`.
 
 ### Configure Bot
 
