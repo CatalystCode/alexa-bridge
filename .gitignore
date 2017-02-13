@@ -47,4 +47,4 @@ jspm_packages
 .yarn-integrity
 
 # localConfig
-localConfig.json
+*.private.json

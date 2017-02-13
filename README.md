@@ -4,7 +4,7 @@ A bridge between Alexa Skills and the Microsoft Bot SDK
 
 # Overview
 
-This is a simple restify-based server that acts as a bridge between an Alexa Skill and the a Microsoft Bot Framework bot. Utterances originating at an Alexa endpoint e.g. an Echo device are received by this bridge, translated and forwarded to the Microsoft Bot. Replies coming back from the Bot are then returned to the originating endpoint. Alexa will read out the text in the .Text field of the Bot reply.
+This is a simple restify-based server that acts as a bridge between an Alexa Skill and a Microsoft Bot Framework bot. Utterances originating at an Alexa endpoint e.g. an Echo device are received by this bridge, translated and forwarded to the Microsoft Bot. Replies coming back from the Bot are then returned to the originating endpoint. Alexa will read out the text in the `Text` field of the Bot reply.
 
 # HowTo
 
@@ -13,7 +13,7 @@ This is a simple restify-based server that acts as a bridge between an Alexa Ski
 First you'll need an [Alexa skill](https://developer.amazon.com). Set this up to be a Custom skill with whatever Invocation Name you prefer. 
 
 Next, configure the interaction model exactly like this:
-```
+```json
 {
   "intents": [
     {
@@ -59,8 +59,8 @@ Now we can start the bridge, but let's do a quick bit of configuration first:
 
 There are only two configuration settings:
 
-	botId - The Bot identity in the conversation. This won't actually be seen anywhere at present.
-    directLineSecret - The secret created when setting up the DirectLine channel for the Bot.
+* `botId` - The Bot identity in the conversation. This won't actually be seen anywhere at present.
+* `directLineSecret` - The secret created when setting up the DirectLine channel for the Bot.
 
 You can either put these in a file called localConfig.json in the bridge's working directory e.g.
 ```

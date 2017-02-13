@@ -8,7 +8,7 @@ var directLine = require('botframework-directlinejs');
 // Required to make rxjs ajax run browser-less
 global.XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
-var config = nconf.argv().env().file({ file: 'localConfig.json' });
+var config = nconf.argv().env().file({ file: 'localConfig.private.json' });
 
 var timing = {};
 var responses = {};
