@@ -19,7 +19,10 @@
     "intent": { 
       "name": "GetUserIntent", 
       "slots": {
-        "phrase" : "who directed star wars"
+        "phrase" : {
+          "name" : "phrase",
+          "value" : "who directed star wars"
+        }
       }
     },
     "inDialog": false 
