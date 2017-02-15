@@ -1,0 +1,27 @@
+{ 
+  "version": "1.0",
+  "session": {
+    "new": true,
+    "sessionId": "SessionId.b3eb3c4e-7c5a-4c10-a2e3-7e2c88a2b770",
+    "application": { 
+      "applicationId": "amzn1.ask.skill.44f3794f-fd48-4a75-af4c-ad8cf536caa5" 
+    },
+    "attributes": {},
+    "user": { 
+      "userId": "amzn1.ask.account.AFF5AH55JFXXIC72W3ZM4JKWOCQPEKXAAX2MXEKATFHWGOZSZETEVSJWCHHHBKH2YHRHYPWZXHF2BNUTKJZO5ANAJ67HMRO5JOLE3MJAW6LSN4BDUBMZSHOC2BS4MNXQKBLASABPVRGAINKEYBB6774D3KU3PT372ZMFJV7LKTPLCH2KNCXR3IRPNBN4FO2KAW3MXPHO3URBZEA" 
+    } 
+  },
+  "request": { 
+    "type": "IntentRequest",
+    "requestId": "EdwRequestId.a1380a0d-cb45-45a3-8da4-3f557ee10bba",
+    "timestamp": "2017-02-15T15:51:17Z",
+    "locale": "en-GB",
+    "intent": { 
+      "name": "GetUserIntent", 
+      "slots": {
+        "phrase" : "who directed star wars"
+      }
+    },
+    "inDialog": false 
+  } 
+}
