@@ -28,6 +28,15 @@ Next, configure the interaction model exactly like this:
   ]
 } 
 ```
+
+Next add a single custom slot type named 'phrase'. Type anything you like for the value. It literally doesn't matter.
+
+Finally provide a single sample utterance:
+
+```
+GetUserIntent {phrase}
+```
+
 This ensures that everything the user says will be passed straight through to the Microsot Bot. We're not going to be using any of the intent or entity recognition features of Alexa.
 
 ## Set up the Microsoft Bot
