@@ -11,6 +11,7 @@
   "dependencies": {
     "applicationinsights": "^0.18.0",
     "botframework-directlinejs": "^0.7.1",
+    "dotenv-extended": "^2.0.1",
     "nconf": "^0.8.4",
     "restify": "^4.3.0",
     "xmlhttprequest": "^1.8.0"
