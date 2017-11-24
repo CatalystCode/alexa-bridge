@@ -17,19 +17,19 @@ Next, configure the interaction model exactly like this:
 {
   "intents": [
     {
-      "intent": "GetUserIntent",
-       "slots": [
+      "slots": [
         {
           "name": "phrase",
           "type": "phrase"
         }
-      ]
+      ],
+      "intent": "GetUserIntent"
     }
   ]
-} 
+}
 ```
 
-Next add a single custom slot type named 'phrase'. Type anything you like for the value. It literally doesn't matter.
+Next add a single custom slot type named 'phrase'. Value must be more than one word I used "this is a long sentence with multiple words"
 
 Finally provide a single sample utterance:
 
@@ -38,6 +38,9 @@ GetUserIntent {phrase}
 ```
 
 This ensures that everything the user says will be passed straight through to the Microsot Bot. We're not going to be using any of the intent or entity recognition features of Alexa.
+
+For SSL certificate use:
+My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority
 
 ## Set up the Microsoft Bot
 
@@ -54,12 +57,17 @@ ngrok http 3979 <- The Bot
 
 ### Configure Alexa Skill
 
-Take the public ngrok endpoint for the 8080 port and use it to configure an HTTP endpoint for the sklill in the Alexa Skill configuration.
-Use the https protocol and add `/messages`. Final url should look something like this: `https://7dd4dd1f.ngrok.io/messages`.
+Take the public ngrok endpoint for the 8080 port and use it to configure an HTTP endpoint for the skill in the Alexa Skill configuration.
+
+ngrok http -bind-tls=true -host-header=rewrite 8080
+
+Use the https protocol and add `/messages`. Final url should look something like this: `https://<id>.ngrok.io/messages`.
+
+
 
 ### Configure Bot
 
-Take the public endpoint for the 3979 (or whatever you chose) port and use as the messaging endpoint in the configration for the Micrsoft bot.
+Take the public endpoint for the 3979 (or whatever you choose) port and use as the messaging endpoint in the configration for the Micrsoft bot.
 
 ## Start the alexa-bridge
 
@@ -72,25 +80,13 @@ There are only two configuration settings:
 * `botId` - The Bot identity in the conversation. This won't actually be seen anywhere at present.
 * `directLineSecret` - The secret created when setting up the DirectLine channel for the Bot.
 
-You can either put these in a file called localConfig.json in the bridge's working directory e.g.
-```
-{
-   "botId" : "YOUR_BOT_ID_HERE",
-   "directLineSecret" : "YOUR_SECRET_HERE"
-}
-```
-
-or you can put those settings in the local environment e.g.
-
-```
-export botId = "YOUR_BOT_ID_HERE"
-...
+You can either put these in a file called .env
 ```
 
 ### Starting the alexa-bridge
 
 ```
-tobybrad@localhost:~/src/alexa-bridge$ node ./server.js
+@localhost:~/src/alexa-bridge$ node ./server.js
 Starting...
 restify listening at http://[::]:8080
 ```
