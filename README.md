@@ -87,13 +87,15 @@ Now we can start the bridge, but let's do a quick bit of configuration first:
 ### Configuring the alexa-bridge
 
 Create a file called in the solution called .env
-It has five configuration settings:
+It has six configuration settings:
 
 * `botId` - The Bot identity in the conversation. This won't actually be seen anywhere at present.
 * `directLineSecret` - The secret created when setting up the DirectLine channel for the Bot.
 * `promptPhrase="Can I help you with anything else?"` - This is the phrase used to prompt the user to continue the conversation
 * `msglocale="en-US"` - The locale for the message language
-* `APPINSIGHTS_INSTRUMENTATIONKEY` - The instrumentation key for appinsignts - comment out the appinsights code if you aren't using it. [Check out the quickstart](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-nodejs-quick-start)
+* `APPINSIGHTS_INSTRUMENTATIONKEY` - The instrumentation key for appinsignts - comment out the appinsights code if you aren't using it. 
+* `leaveSessionOpen` - Set this to "false" to end the session by default (i.e. Alexa does not wait for further input) or "true" to wait for input and use the promptPhrase to prompt the user if they do not say anything else
+* [Check out the quickstart](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-nodejs-quick-start)
 
 ### Starting the alexa-bridge
 
@@ -115,6 +117,26 @@ At this point you should be able to use the test page on the Alexa Skill configu
 ### Start the Bot
 
 How you do this depends on whether you're in Node or C#, but I'm trusting you can figure this out.
+
+### Managing conversation via Bot
+
+The Bot Framework SDK allows you to either send text based messages, or alternatively (when using channels like Cortana) to send SSML for more granular control over how something is spoken.  This bridge now supports both, using the 'text' property on the activity by default, but allowing this to be overridden by the 'speak' property if SSML has been specified.
+
+The bridge will also look for inputHints on the incoming activity from the bot, specifically looking for the 'expectingInput' hint, which will cause the bridge to leave the conversation open and allow the user to say something else without explicitly invoking the skill again.
+
+Below is an example of using the above features in a C# bot. In this example we send some basic SSML from the bot to the bridge and also indicate that we are expecting an answer from the user.
+
+```
+var messageText = "What would you like to do next?";
+var speakText = "<speak>Thanks! I say, What would you like to do next?</speak>";
+var messageOptions = new MessageOptions
+            {
+                InputHint = InputHints.ExpectingInput
+            };
+await context.SayAsync(messageText, speakText, options: messageOptions);
+```
+
+There is also an app setting 'leaveSessionOpen' which, if set to "true", will leave the session open and accept more input by default without needing to specify it explicitly using the inputHint.  However, having this set to false will allow you to only wait for more input from the user when it makes sense for your bot.
 
 ### Publishing this project to an Azure App Service
 
