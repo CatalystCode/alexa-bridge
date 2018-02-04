@@ -95,6 +95,7 @@ It has six configuration settings:
 * `msglocale="en-US"` - The locale for the message language
 * `APPINSIGHTS_INSTRUMENTATIONKEY` - The instrumentation key for appinsignts - comment out the appinsights code if you aren't using it. 
 * `leaveSessionOpen` - Set this to "false" to end the session by default (i.e. Alexa does not wait for further input) or "true" to wait for input and use the promptPhrase to prompt the user if they do not say anything else
+* `useHeroCardAttachmentAsAlexaCard` - Set this to "true" to have the bridge use a Bot Framework Hero Card attachment to construct an Alexa card (the title, text and image from the Hero Card to populate the Alexa card). By default this is disabled unless this variable exists and is set to "true".
 * [Check out the quickstart](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-nodejs-quick-start)
 
 ### Starting the alexa-bridge
@@ -117,6 +118,20 @@ At this point you should be able to use the test page on the Alexa Skill configu
 ### Start the Bot
 
 How you do this depends on whether you're in Node or C#, but I'm trusting you can figure this out.
+
+### Channel Data
+
+By default the ChannelData property on the Acitivity object sent to your bot is populated with the following properties;
+
+* Alexa Session Id (session_sessionId)
+* Alexa User Id (user_userId)
+* Linked Account Access Token (user_accessToken - if account linking is enabled for the skill and the user has successfully linked their account)
+* User Permissions (user_permissions)
+* Alexa Api Access Token (alexa_apiAccessToken)
+* Alexa Api Endpoint (alexa_apiEndpoint)
+* Device (device)
+
+The above properties will allow you to do things like check the type of Alexa device being used, the permissions that the user has accepted (such as allowing you to see their full or partial address), or send progressive messages / notifications using Alexa Apis (via the Alexa Api Access Token and Endpoint).
 
 ### Managing conversation via Bot
 
