@@ -123,6 +123,17 @@
             ],
             "resources": [
                 {
+                    "apiVersion": "2016-08-01",
+                    "name": "web",
+                    "type": "config",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                    ],
+                    "properties": {
+                        "alwaysOn": true
+                    }
+                },
+                {
                     "apiVersion": "2015-08-01",
                     "name": "web",
                     "type": "sourcecontrols",
@@ -154,18 +165,7 @@
                         "multipleResponsesTimeout": "3000",
                         "directLineDomain": "https://directline.botframework.com/v3/directline"
                     }
-                },
-                {
-                    "apiVersion": "2016-08-01",
-                    "name": "web",
-                    "type": "config",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
-                    ],
-                    "properties": {
-                        "alwaysOn": true
-                    }
-                }                
+                }              
             ]
         }
     ]
