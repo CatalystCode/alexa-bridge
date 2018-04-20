@@ -111,6 +111,7 @@
             ],
             "properties": {
                 "name": "[parameters('siteName')]",
+                "httpsOnly" : "true",
                 "siteConfig": {
                     "linuxFxVersion": "[parameters('linuxFxVersion')]"
                 },
@@ -153,7 +154,18 @@
                         "multipleResponsesTimeout": "3000",
                         "directLineDomain": "https://directline.botframework.com/v3/directline"
                     }
-                }
+                },
+                {
+                    "apiVersion": "2016-08-01",
+                    "name": "[concat(parameters('sites_jdfab1_name'), '/', 'web')]",
+                    "type": "Microsoft.Web/sites/config",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                    ],
+                    "properties": {
+                        "alwaysOn": true
+                    }
+                }                
             ]
         }
     ]
