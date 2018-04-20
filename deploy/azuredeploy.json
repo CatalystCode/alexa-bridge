@@ -157,8 +157,8 @@
                 },
                 {
                     "apiVersion": "2016-08-01",
-                    "name": "[concat(parameters('sites_jdfab1_name'), '/', 'web')]",
-                    "type": "Microsoft.Web/sites/config",
+                    "name": "web",
+                    "type": "config",
                     "dependsOn": [
                         "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
                     ],
