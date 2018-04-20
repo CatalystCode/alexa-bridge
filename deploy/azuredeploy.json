@@ -1,0 +1,160 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "siteName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the web app that you wish to create."
+            }
+        },
+        "hostingPlanName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the App Service plan to use for hosting the web app."
+            }
+        },
+        "hostingEnvironment": {
+            "type": "string",
+            "defaultValue": ""
+        },        
+        "sku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "metadata": {
+                "description": "The pricing tier for the hosting plan."
+            }
+        },
+        "skuCode": {
+            "type": "string",
+            "defaultValue": "S1"
+        },        
+        "workerSize": {
+            "type": "string",
+            "allowedValues": [
+                "0",
+                "1",
+                "2"
+            ],
+            "defaultValue": "0",
+            "metadata": {
+                "description": "The instance size of the hosting plan (small, medium, or large)."
+            }
+        },
+        "linuxFxVersion": {
+            "type": "string",
+            "defaultValue": "node|9.4"
+        },
+        "repoURL": {
+            "type": "string",
+            "defaultValue": "https://github.com/daltskin/alexa-bridge.git",
+            "metadata": {
+                "description": "The URL for the GitHub repository that contains the project to deploy."
+            }
+        },
+        "branch": {
+            "type": "string",
+            "defaultValue": "master",
+            "metadata": {
+                "description": "The branch of the GitHub repository to use."
+            }
+        },
+        "botId": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Azure Bot Service Bot Id (not MSA App ID)"
+            }
+        },
+        "directLineSecret": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Azure Bot Service Direct Line Channel Secret - get this from the Azure Bot Service portal"
+            }
+        },
+        "appInsightsInstrumentationKey": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Application Insights key to store bridge activity"
+            }
+        }        
+    },
+    "resources": [
+        {
+            "apiVersion": "2016-09-01",
+            "name": "[parameters('hostingPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "kind": "linux",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "Tier": "[parameters('sku')]",
+                "Name": "[parameters('skuCode')]"
+            },
+            "properties": {
+                "name": "[parameters('hostingPlanName')]",
+                "workerSizeId": "[parameters('workerSize')]",
+                "reserved": true,
+                "numberOfWorkers": "1",
+                "hostingEnvironment": "[parameters('hostingEnvironment')]"
+            }
+        },
+        {
+            "apiVersion": "2016-08-01",
+            "name": "[parameters('siteName')]",
+            "type": "Microsoft.Web/sites",
+            "kind": "app,linux",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+            ],
+            "properties": {
+                "name": "[parameters('siteName')]",
+                "siteConfig": {
+                    "linuxFxVersion": "[parameters('linuxFxVersion')]"
+                },
+                "serverFarmId": "[parameters('hostingPlanName')]",
+                "hostingEnvironment": "[parameters('hostingEnvironment')]"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]"
+            ],
+            "resources": [
+                {
+                    "apiVersion": "2015-08-01",
+                    "name": "web",
+                    "type": "sourcecontrols",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                    ],
+                    "properties": {
+                        "RepoUrl": "[parameters('repoURL')]",
+                        "branch": "[parameters('branch')]",
+                        "IsManualIntegration": true
+                    }
+                },
+                {
+                    "apiVersion": "2015-08-01",
+                    "name": "appsettings",
+                    "type": "config",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                    ],
+                    "properties": {
+                        "botId": "[parameters('botId')]",
+                        "directLineSecret": "[parameters('directLineSecret')]",
+                        "promptPhrase": "Can I help you with anything else?",
+                        "msglocale": "en-US",
+                        "APPINSIGHTS_INSTRUMENTATIONKEY": "[parameters('appInsightsInstrumentationKey')]",
+                        "leaveSessionOpen": "false",
+                        "useHeroCardAttachmentAsAlexaCard": "false",
+                        "useMultipleResponses": "true",
+                        "multipleResponsesTimeout": "3000",
+                        "directLineDomain": "https://directline.botframework.com/v3/directline"
+                    }
+                }
+            ]
+        }
+    ]
+}
