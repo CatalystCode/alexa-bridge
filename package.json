@@ -1,6 +1,6 @@
 {
   "name": "alexa-bridge",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "server.js",
   "scripts": {
@@ -9,11 +9,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "applicationinsights": "^0.18.0",
-    "botframework-directlinejs": "^0.7.1",
-    "dotenv-extended": "^2.0.1",
-    "nconf": "^0.8.4",
-    "restify": "^4.3.0",
+    "applicationinsights": "^1.0.2",
+    "botframework-directlinejs": "^0.9.14",
+    "dotenv-extended": "^2.0.2",
+    "nconf": "^0.10.0",
+    "request": "^2.85.0",
+    "restify": "^7.1.1",
     "xmlhttprequest": "^1.8.0"
   },
   "files": [

@@ -157,6 +157,7 @@
                         "botId": "[parameters('botId')]",
                         "directLineSecret": "[parameters('directLineSecret')]",
                         "promptPhrase": "Can I help you with anything else?",
+                        "progressiveResponse" : "I'm just looking that up for you",
                         "msglocale": "en-US",
                         "APPINSIGHTS_INSTRUMENTATIONKEY": "[parameters('appInsightsInstrumentationKey')]",
                         "leaveSessionOpen": "false",
