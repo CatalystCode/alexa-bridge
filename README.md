@@ -1,6 +1,6 @@
 # alexa-bridge
 
-A bridge between Alexa Skills and the Microsoft Bot SDK
+A bridge between Alexa Skills and the Azure Bot Service
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdaltskin%2Falexa-bridge%2Fmaster%2Fdeploy%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
@@ -8,73 +8,94 @@ A bridge between Alexa Skills and the Microsoft Bot SDK
 
 # Overview
 
-This is a simple restify-based server that acts as a bridge between an Alexa Skill and a Microsoft Bot Framework bot. Utterances originating at an Alexa endpoint e.g. an Echo device are received by this bridge, translated and forwarded to the Microsoft Bot. Replies coming back from the Bot are then returned to the originating endpoint. Alexa will read out the text in the `Text` field of the Bot reply.
+This is a simple restify-based server that acts as a bridge between an Alexa Skill and the Azure Bot Service. Utterances originating at an Alexa endpoint e.g. an Echo device are received by this bridge, translated and forwarded to the Microsoft Bot Framework. Replies coming back from the Bot are then returned to the originating endpoint. Alexa will read out the text in the `Text` field of the Bot reply.
 
 # HowTo
 
 ## Set up the Microsoft Bot
 
-Head on over to the [Microsoft Bot Framework](https://dev.botframework.com/) and create yourself a new bot (if you didn't already have one). Set up a DirectLine channel. This is how the bridge will talk to the Bot.
+Head on over to the [Microsoft Bot Framework](https://dev.botframework.com/) and create yourself a new bot (if you didn't already have one). Set up the [DirectLine](https://docs.microsoft.com/en-us/azure/bot-service/bot-service-channel-connect-directline) channel and make a note of the DirectLine secret. This is how the bridge will talk to the Bot.
 
-## Set up ngrok (for local dev/testing)
-
-Get yourself [ngrok](https://ngrok.com). To test both the bridge and the bot on your local machine you'll need two ngrok instances running.
-
-```
-ngrok http 8080 <- The bridge
-ngrok http 3979 <- The Bot
-```
-If the bot is already published you can use the live end point from the bot configured through the DirectLine Channel above.
-
+> ### Development: Set up ngrok (for local dev/testing only)
+> Get yourself [ngrok](https://ngrok.com). To test both the bridge and the bot on your local machine you'll need two ngrok instances running.
+>```
+>ngrok http 8080 <- The bridge
+>ngrok http 3979 <- The Bot
+>```
+>
 ## Set up an Alexa Skill
 
-First you'll need an [Alexa skill](https://developer.amazon.com). Set this up to be a Custom skill with whatever Invocation Name you prefer. 
+First you'll need an [Alexa skill](https://developer.amazon.com). Set this up to be a Custom skill with whatever `Skill Invocation Name` you prefer. 
 
 ### Interaction Model
-Next, configure the interaction model exactly like this:
+Use the JSON Editor to configure the interaction model exactly like this [sample provided in this repo](.\assets\alexa_model_example.json)
 ```json
 {
-  "intents": [
-    {
-      "slots": [
-        {
-          "name": "phrase",
-          "type": "phrase"
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "<replace this>",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "GetUserIntent",
+                    "slots": [
+                        {
+                            "name": "phrase",
+                            "type": "phrase"
+                        }
+                    ],
+                    "samples": [
+                        "{phrase}"
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "name": "phrase",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "GetUserIntent asdf {phrase}"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
-      ],
-      "intent": "GetUserIntent"
     }
-  ]
 }
 ```
 
-Next add a single custom slot type named 'phrase'. Value must be more than one word I used "this is a long sentence with multiple words". This is important as a single word here only returns one word to the end point.
+This ensures that everything the user says will be passed straight through to the Microsot Bot.  We're not going to be using any of the intent or entity recognition features of Alexa instead we are using Alexa as a glorified microphone and speaker that performs the voice to text component for us.
 
-Finally provide a single sample utterance:
+### Endpoint Configuration
+Configure the Service Endpoint Type as follows
 
-```
-GetUserIntent {phrase}
-```
+| Endpoint Type | Default Region | SSL Certificate type |
+| ----- | ----- | ----- |
+| `HTTPS` | `https://<your-appname>.azurewebsites.net/messages` | `My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority` |
 
-This ensures that everything the user says will be passed straight through to the Microsot Bot. We're not going to be using any of the intent or entity recognition features of Alexa instead we are using Alexa as a glorified microphone and speaker that performs the voice to text component for us.
+> ### Development note for local dev/test
+> 
+> Take the public ngrok endpoint for the 8080 port and use it to configure an HTTP endpoint for the skill in the Alexa Skill configuration.
 
-### Configuration
+> ```
+> ngrok http -bind-tls=true -host-header=rewrite 8080
+> ```
 
-Take the public ngrok endpoint for the 8080 port and use it to configure an HTTP endpoint for the skill in the Alexa Skill configuration.
+> Default Region will be `https://<id>.ngrok.io/messages`
 
-```
-ngrok http -bind-tls=true -host-header=rewrite 8080
-```
-
-Use the https protocol and add `/messages`. Final url should look something like this: `https://<id>.ngrok.io/messages`.
-
-Later when you publish this solution to an Azure App Service you can change this to something like
-`https://<your app name>.azurewebsites.net/messages`.
-
-### SSL Certificate
-
-For SSL certificate use:
-My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority 
 
 ### Test
 
@@ -86,21 +107,26 @@ Take the public endpoint for the 3979 (or whatever you choose) port and use as t
 
 ## Start the alexa-bridge
 
-Now we can start the bridge, but let's do a quick bit of configuration first:
+The easiest way to deploy this is to use the `Deploy to Azure` button above, all the following settings will automatically be setup for you.  Recommend that you deploy this to the `West US` data center to reduce latency between the Alexa <> Bridge <> Bot.
+The bridge will automatically start after deployment so should be good to go.
 
 ### Configuring the alexa-bridge
 
-Create a file called in the solution called .env
-It has six configuration settings:
+The following application keys are required, you can set these in your launch.json file for development or in the Application Settings within the Azure portal.  
 
-* `botId` - The Bot identity in the conversation. This won't actually be seen anywhere at present.
-* `directLineSecret` - The secret created when setting up the DirectLine channel for the Bot.
-* `promptPhrase="Can I help you with anything else?"` - This is the phrase used to prompt the user to continue the conversation
-* `msglocale="en-US"` - The locale for the message language
-* `APPINSIGHTS_INSTRUMENTATIONKEY` - The instrumentation key for appinsignts - comment out the appinsights code if you aren't using it. 
-* `leaveSessionOpen` - Set this to "false" to end the session by default (i.e. Alexa does not wait for further input) or "true" to wait for input and use the promptPhrase to prompt the user if they do not say anything else
-* `useHeroCardAttachmentAsAlexaCard` - Set this to "true" to have the bridge use a Bot Framework Hero Card attachment to construct an Alexa card (the title, text and image from the Hero Card to populate the Alexa card). By default this is disabled unless this variable exists and is set to "true".
-* [Check out the quickstart](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-nodejs-quick-start)
+| Key | Value | Description |
+| ----- | ----- | ----- |
+|`botId` | `<yourbotname>` | The Bot identity in the conversation. This won't actually be seen anywhere|
+|`directLineSecret` | `<yourbotsecret>` | The secret created when setting up the DirectLine channel for the Bot |
+|`promptPhrase` | `Can I help you with anything else?` | This is the phrase used to prompt the user to continue the conversation
+|`msglocale` | `en-US` | The locale for the message language
+|`APPINSIGHTS_INSTRUMENTATIONKEY` | `<yourappinsightsguid>` | The instrumentation key for appinsignts - comment out the appinsights code if you aren't using it  https://docs.microsoft.com/en-us/azure/application-insights/app-insights-nodejs-quick-start |
+|`leaveSessionOpen` | `false` | Set this to "false" to end the session by default (i.e. Alexa does not wait for further input) or "true" to wait for input and use the promptPhrase to prompt the user if they do not say anything else |
+| `useHeroCardAttachmentAsAlexaCard` | `false` | Set this to "true" to have the bridge use a Bot Framework Hero Card attachment to construct an Alexa card (the title, text and image from the Hero Card to populate the Alexa card). By default this is disabled unless this variable exists and is set to "true" |
+|`progressiveResponse` | `Working in it` | The busy message that you want Alexa to say whilst results are being retrieved from your bot |
+|`useMultipleResponses` | `true` | Set this to true if your bot responds with more than 1 message in any response |
+|`multipleResponsesTimeout` | `4000` | Time in milliseconds that any buffered responses from your bot will be released to Alexa.  If you have long running tasks, set this value slightly longer than they take.  However, careful setting this value to large (4+ milliseconds) as your bot responses will be ignored and you'll g et the standard Alexa timeout response instead |
+|`directLineDomain` | `https://directline.botframework.com/v3/directline` |You can tweak this setting depending on your geographic region - the default should be fine. Possible options are: https://directline.botframework.com/v3/directline  https://asia.directline.botframework.com/v3/directline * https://europe.directline.botframework.com/v3/directline * https://northamerica.directline.botframework.com/v3/directline |
 
 ### Starting the alexa-bridge
 
@@ -159,7 +185,11 @@ There is also an app setting 'leaveSessionOpen' which, if set to "true", will le
 
 ### Publishing this project to an Azure App Service
 
-Once you are satisfied with the bridge you will need to publish it to Azure.
+There are a few different ways to deploy this to Azure - including the provided arm template
+
+[Publish using Azure Resoure Manager template](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdaltskin%2Falexa-bridge%2Fmaster%2Fdeploy%2Fazuredeploy.json)
+Deploys straight into a Resource Group, just provide the Application Settings during provisioning and you're good to go.
+
 
 [Publish using Azure CLI](https://docs.microsoft.com/en-us/azure/app-service/app-service-web-get-started-nodejs)
 Alternatively you can do this using the Azure portal. One thing I did find is that you may need to use the B1 Basic or above for the app service plan and host it in the same location as the Alexa skill and the bot to reduce latency. Free or shared app services don't support always on which means there is a long startup time for the bot/bridge which can lead to timeouts as Alexa will only wait 8 seconds for a response before timing out.

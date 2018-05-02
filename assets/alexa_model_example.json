@@ -1,0 +1,45 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "demo",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "GetUserIntent",
+                    "slots": [
+                        {
+                            "name": "phrase",
+                            "type": "phrase"
+                        }
+                    ],
+                    "samples": [
+                        "{phrase}"
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "name": "phrase",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "GetUserIntent asdf {phrase}"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
