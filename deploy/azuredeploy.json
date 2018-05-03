@@ -130,7 +130,13 @@
                         "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
                     ],
                     "properties": {
-                        "alwaysOn": true
+                        "alwaysOn": true,
+                        "requestTracingEnabled": false,
+                        "remoteDebuggingEnabled": false,
+                        "remoteDebuggingVersion": null,
+                        "httpLoggingEnabled": false,
+                        "logsDirectorySizeLimit": 35,
+                        "detailedErrorLoggingEnabled": false
                     }
                 },
                 {
