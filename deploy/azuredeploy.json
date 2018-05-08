@@ -14,10 +14,6 @@
         "createServerFarm": {
             "type": "bool"
         },
-        "serverFarmLocation": {
-            "type": "string",
-            "defaultValue": ""
-        },        
         "serverFarmSku": {
             "type": "object",
             "defaultValue": {
@@ -27,10 +23,6 @@
                 "family": "S",
                 "capacity": 1
             }
-        },
-        "nodeVersion": {
-            "type": "string",
-            "defaultValue": "node|9.4"
         },
         "repoURL": {
             "type": "string",
