@@ -107,7 +107,7 @@ Take the public endpoint for the 3979 (or whatever you choose) port and use as t
 
 ## Start the alexa-bridge
 
-The easiest way to deploy this is to use the `Deploy to Azure` button above, all the following settings will automatically be setup for you.  Recommend that you deploy this to the `West US` data center to reduce latency between the Alexa <> Bridge <> Bot.
+The easiest way to deploy this is to use the `Deploy to Azure` button above, all the following settings will automatically be setup for you.  Recommend that you deploy this to the same data center to where you Azure Bot Service is reduce latency between the Alexa <> Bridge <> Bot.
 The bridge will automatically start after deployment so should be good to go.
 
 ### Configuring the alexa-bridge
@@ -125,7 +125,8 @@ The following application keys are required, you can set these in your launch.js
 | `useHeroCardAttachmentAsAlexaCard` | `false` | Set this to "true" to have the bridge use a Bot Framework Hero Card attachment to construct an Alexa card (the title, text and image from the Hero Card to populate the Alexa card). By default this is disabled unless this variable exists and is set to "true" |
 |`progressiveResponse` | `Working in it` | The busy message that you want Alexa to say whilst results are being retrieved from your bot |
 |`useMultipleResponses` | `true` | Set this to true if your bot responds with more than 1 message in any response |
-|`multipleResponsesTimeout` | `4000` | Time in milliseconds that any buffered responses from your bot will be released to Alexa.  If you have long running tasks, set this value slightly longer than they take.  However, careful setting this value to large (4+ milliseconds) as your bot responses will be ignored and you'll g et the standard Alexa timeout response instead |
+|`multipleResponsesTimeout` | `3000` | Time in milliseconds that any buffered responses from your bot will be released to Alexa.  If you have long running tasks, set this value slightly longer than they take.  However, careful setting this value to large (4+ milliseconds) as your bot responses will be ignored and you'll g et the standard Alexa timeout response instead |
+|`useWebsocket` | `true` | Use websockets vs polling DirectLine connector service |
 |`directLineDomain` | `https://directline.botframework.com/v3/directline` |You can tweak this setting depending on your geographic region - the default should be fine. Possible options are: https://directline.botframework.com/v3/directline  https://asia.directline.botframework.com/v3/directline * https://europe.directline.botframework.com/v3/directline * https://northamerica.directline.botframework.com/v3/directline |
 
 ### Starting the alexa-bridge

@@ -8,40 +8,27 @@
                 "description": "The name of the web app that you wish to create."
             }
         },
-        "hostingPlanName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the App Service plan to use for hosting the web app."
-            }
+        "serverFarmId": {
+            "type": "string"
         },
-        "hostingEnvironment": {
+        "createServerFarm": {
+            "type": "bool"
+        },
+        "serverFarmLocation": {
             "type": "string",
             "defaultValue": ""
         },        
-        "sku": {
-            "type": "string",
-            "defaultValue": "Standard",
-            "metadata": {
-                "description": "The pricing tier for the hosting plan."
+        "serverFarmSku": {
+            "type": "object",
+            "defaultValue": {
+                "name": "S1",
+                "tier": "Standard",
+                "size": "S1",
+                "family": "S",
+                "capacity": 1
             }
         },
-        "skuCode": {
-            "type": "string",
-            "defaultValue": "S1"
-        },        
-        "workerSize": {
-            "type": "string",
-            "allowedValues": [
-                "0",
-                "1",
-                "2"
-            ],
-            "defaultValue": "0",
-            "metadata": {
-                "description": "The instance size of the hosting plan (small, medium, or large)."
-            }
-        },
-        "linuxFxVersion": {
+        "nodeVersion": {
             "type": "string",
             "defaultValue": "node|9.4"
         },
@@ -61,7 +48,6 @@
         },
         "botId": {
             "type": "string",
-            "defaultValue": "",
             "metadata": {
                 "description": "Azure Bot Service Bot Id (not MSA App ID)"
             }
@@ -73,72 +59,128 @@
                 "description": "Azure Bot Service Direct Line Channel Secret - get this from the Azure Bot Service portal"
             }
         },
-        "appInsightsInstrumentationKey": {
+        "appInsightsInstrumentationLocation": {
             "type": "string",
-            "defaultValue": "",
+            "allowedValues": [
+                "East US",
+                "North Europe",
+                "South Central US",
+                "Southeast Asia",
+                "West Europe",
+                "West US 2"
+            ],
             "metadata": {
-                "description": "Application Insights key to store bridge activity"
+                "description": "Application Insights Location"
             }
-        }        
+        }
+    },
+    "variables": {
+        "appInsightsName": "[concat(parameters('botId'), '-alexabridge')]",
+        "serverFarmName": "[last(split(parameters('serverFarmId'), '/'))]"        
     },
     "resources": [
         {
-            "apiVersion": "2016-09-01",
-            "name": "[parameters('hostingPlanName')]",
             "type": "Microsoft.Web/serverfarms",
-            "kind": "linux",
+            "condition": "[parameters('createServerFarm')]",
+            "name": "[variables('serverFarmName')]",
+            "apiVersion": "2016-09-01",
             "location": "[resourceGroup().location]",
-            "sku": {
-                "Tier": "[parameters('sku')]",
-                "Name": "[parameters('skuCode')]"
-            },
+            "sku": "[parameters('serverFarmSku')]",
             "properties": {
-                "name": "[parameters('hostingPlanName')]",
-                "workerSizeId": "[parameters('workerSize')]",
-                "reserved": true,
-                "numberOfWorkers": "1",
-                "hostingEnvironment": "[parameters('hostingEnvironment')]"
+                "name": "[variables('serverFarmName')]"
             }
         },
         {
-            "apiVersion": "2016-08-01",
+            "name": "[variables('appInsightsName')]",
+            "type": "microsoft.insights/components",
+            "kind": "web",
+            "apiVersion": "2015-05-01",
+            "location": "[parameters('appInsightsInstrumentationLocation')]",
+            "tags": {
+                "[concat('hidden-link:', resourceId('Microsoft.BotService/botServices/', parameters('botId')))]": "Resource",
+                "[concat('hidden-link:', resourceId('Microsoft.Web/sites/', parameters('siteName')))]": "Resource"
+            },
+            "properties": {
+                "ApplicationId": "[parameters('botId')]"
+            }
+        },
+        {
+            "apiVersion": "2015-08-01",
             "name": "[parameters('siteName')]",
             "type": "Microsoft.Web/sites",
-            "kind": "app,linux",
+            "kind": "app",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+
+                "[resourceId('microsoft.insights/components/', variables('appInsightsName'))]"
             ],
             "properties": {
                 "name": "[parameters('siteName')]",
-                "httpsOnly" : "true",
+                "httpsOnly": "true",
+                "serverFarmId": "[variables('serverFarmName')]",
                 "siteConfig": {
-                    "linuxFxVersion": "[parameters('linuxFxVersion')]"
+                    "alwaysOn": true,
+                    "clientAffinityEnabled ": false,                    
+                    "appSettings": [
+                        {
+                            "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                            "value": "6.9.1"
+                        },
+                        {
+                            "name": "botId",
+                            "value": "[parameters('botId')]"
+                        },
+                        {
+                            "name": "directLineSecret",
+                            "value": "[parameters('directLineSecret')]"
+                        },
+                        {
+                            "name": "promptPhrase",
+                            "value": "Can I help you with anything else?"
+                        },
+                        {
+                            "name": "progressiveResponse",
+                            "value": "I'm just looking that up for you"
+                        },
+                        {
+                            "name": "msglocale",
+                            "value": "en-US"
+                        },
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
+                        },
+                        {
+                            "name": "leaveSessionOpen",
+                            "value": "false"
+                        },
+                        {
+                            "name": "useHeroCardAttachmentAsAlexaCard",
+                            "value": "false"
+                        },
+                        {
+                            "name": "useMultipleResponses",
+                            "value": "true"
+                        },
+                        {
+                            "name": "multipleResponsesTimeout",
+                            "value": "3000"
+                        },
+                        {
+                            "name": "useWebsocket",
+                            "value": "true"
+                        },                        
+                        {
+                            "name": "directLineDomain",
+                            "value": "https://directline.botframework.com/v3/directline"
+                        }
+                    ]
                 },
-                "serverFarmId": "[parameters('hostingPlanName')]",
-                "hostingEnvironment": "[parameters('hostingEnvironment')]"
+                "dependsOn": [
+                    "[concat('Microsoft.Web/serverfarms/', variables('serverFarmName'))]"
+                ]
             },
-            "dependsOn": [
-                "[concat('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]"
-            ],
             "resources": [
-                {
-                    "apiVersion": "2016-08-01",
-                    "name": "web",
-                    "type": "config",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
-                    ],
-                    "properties": {
-                        "alwaysOn": true,
-                        "requestTracingEnabled": false,
-                        "remoteDebuggingEnabled": false,
-                        "remoteDebuggingVersion": null,
-                        "httpLoggingEnabled": false,
-                        "logsDirectorySizeLimit": 35,
-                        "detailedErrorLoggingEnabled": false
-                    }
-                },
                 {
                     "apiVersion": "2015-08-01",
                     "name": "web",
@@ -151,28 +193,7 @@
                         "branch": "[parameters('branch')]",
                         "IsManualIntegration": true
                     }
-                },
-                {
-                    "apiVersion": "2015-08-01",
-                    "name": "appsettings",
-                    "type": "config",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
-                    ],
-                    "properties": {
-                        "botId": "[parameters('botId')]",
-                        "directLineSecret": "[parameters('directLineSecret')]",
-                        "promptPhrase": "Can I help you with anything else?",
-                        "progressiveResponse" : "I'm just looking that up for you",
-                        "msglocale": "en-US",
-                        "APPINSIGHTS_INSTRUMENTATIONKEY": "[parameters('appInsightsInstrumentationKey')]",
-                        "leaveSessionOpen": "false",
-                        "useHeroCardAttachmentAsAlexaCard": "false",
-                        "useMultipleResponses": "true",
-                        "multipleResponsesTimeout": "3000",
-                        "directLineDomain": "https://directline.botframework.com/v3/directline"
-                    }
-                }              
+                }
             ]
         }
     ]
