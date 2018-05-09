@@ -9,7 +9,21 @@
 			"request": "launch",
 			"name": "Launch Program",
 			"program": "${workspaceRoot}/server.js",
-			"cwd": "${workspaceRoot}"
+			"cwd": "${workspaceRoot}",
+			"env": {
+				"botId" : "",
+				"directLineSecret" : "",
+				"APPINSIGHTS_INSTRUMENTATIONKEY" : "",
+				"promptPhrase"	: "Can I help with anything else?",
+				"progressiveResponse" : "Working on it for you",
+				"msglocale" : "en-US",
+				"leaveSessionOpen" : "false",
+				"useHeroCardAttachmentAsAlexaCard" : "false",
+				"useMultipleResponses" : "true",
+				"multipleResponsesTimeout" : "3000",
+				"useWebsocket" : "true",
+				"directLineDomain": "https://directline.botframework.com/v3/directline"
+			}			
 		},
 		{
 			"type": "node",
